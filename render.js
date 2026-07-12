@@ -1,43 +1,34 @@
 const puppeteer = require('puppeteer');
+const serve = require('serve');
 const path = require('path');
 
 (async () => {
-  console.log("--- بدء تشغيل محرك الرندر ---");
+  // تشغيل خادم محلي على المنفذ 3000
+  const server = serve(path.resolve('.'), { port: 3000 });
+  console.log("--- الخادم المحلي يعمل على http://localhost:3000 ---");
 
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    protocolTimeout: 600000 // رفع المهلة إلى 10 دقائق
+    protocolTimeout: 600000
   });
 
   const page = await browser.newPage();
-
-  // تتبع الـ Console من المتصفح إلى الـ Terminal الخاص بـ GitHub Action
-  page.on('console', msg => {
-    console.log(`[Browser Console]: ${msg.text()}`);
-  });
-
-  console.log("جاري فتح صفحة الرندر...");
-  await page.goto('file://' + path.resolve('index.html'), { 
-    waitUntil: 'networkidle0',
-    timeout: 60000 
-  });
-
-  // انتظار انتهاء الرندر بناءً على الـ console.log
-  console.log("بانتظار إشارة اكتمال الرندر من المتصفح...");
   
+  page.on('console', msg => console.log(`[Browser]: ${msg.text()}`));
+
+  // الآن نفتح الرابط عبر http بدلاً من file
+  console.log("جاري فتح الرابط...");
+  await page.goto('http://localhost:3000/index.html', { waitUntil: 'networkidle0' });
+
+  // انتظار إشارة النجاح
   await new Promise((resolve, reject) => {
     page.on('console', (msg) => {
-      if (msg.text() === 'RENDER_FINISHED') {
-        console.log("تم استلام إشارة اكتمال الرندر!");
-        resolve();
-      }
+      if (msg.text() === 'RENDER_FINISHED') resolve();
     });
-
-    // مهلة طوارئ في حال تعليق المتصفح
-    setTimeout(() => reject(new Error("تجاوز وقت الرندر المسموح به (Timeout)")), 600000);
+    setTimeout(() => reject(new Error("Timeout")), 600000);
   });
 
-  console.log("إغلاق المتصفح...");
   await browser.close();
+  server.stop(); // إيقاف الخادم
   console.log("--- انتهت المهمة بنجاح ---");
 })();
