@@ -1,0 +1,30 @@
+name: Render Video Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # يتيح لك تشغيله يدوياً من واجهة GitHub
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install puppeteer
+        
+      - name: Run Render Script
+        run: node render.js
+        
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Ofoq-Mediabunny-Render.mp4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
