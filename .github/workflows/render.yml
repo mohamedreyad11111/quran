@@ -20,8 +20,7 @@ jobs:
           npm install
           # تثبيت المكتبات اللازمة لتشغيل المتصفح على بيئة Linux
           sudo apt-get update
-          sudo apt-get install -y libgbm-dev libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2
-        
+          sudo apt-get install -y libgbm-dev libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2t64        
       - name: Run Render Script
         run: node render.js
         
